@@ -1,0 +1,348 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>叫車平台輿情分析</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: single 1080px column, summary strip → diverging topic chart → platform split + radar → word cloud → coded quotes table */
+:root{
+  --bg:#f5f6f7; --panel:#ffffff; --ink:#15191d; --ink-2:#4b535b; --ink-3:#7c858e; --line:#dfe3e7;
+  --pos:#17866a; --neg:#cf4b35; --pos-soft:#dff1ea; --neg-soft:#fbe5e0; --accent:#c98500;
+  --p1:#2a78d6; --p2:#eb6834; --p3:#1baf7a; --p4:#c98500; --p5:#d55181;
+  --f-display:"Noto Serif TC","Songti TC",serif; --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121518; --panel:#1b1f23; --ink:#eef1f3; --ink-2:#b7bfc6; --ink-3:#8a939b; --line:#2e343a;
+  --pos:#3fb592; --neg:#e8705b; --pos-soft:#173229; --neg-soft:#3a201b; --accent:#e0a12a;
+  --p1:#3987e5; --p2:#d95926; --p3:#199e70; --p4:#c98500; --p5:#d55181; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121518; --panel:#1b1f23; --ink:#eef1f3; --ink-2:#b7bfc6; --ink-3:#8a939b; --line:#2e343a;
+  --pos:#3fb592; --neg:#e8705b; --pos-soft:#173229; --neg-soft:#3a201b; --accent:#e0a12a;
+  --p1:#3987e5; --p2:#d95926; --p3:#199e70; --p4:#c98500; --p5:#d55181; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;padding-inline:16px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:40px 64px;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:clamp(28px,4.5vw,40px);font-weight:900}
+h2{font-size:21px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--ink-3);font-weight:500}
+.lede{color:var(--ink-2);max-width:62ch;margin:8px 0 0}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+header{display:flex;flex-direction:column;gap:6px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500}
+.switch input{width:18px;height:18px;accent-color:var(--ink)}
+.controls .note{color:var(--ink-3);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stat{background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat b{font-family:var(--f-num);font-size:26px;font-weight:500}
+.stat span{font-size:13px;color:var(--ink-3)}
+section.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card .sub{color:var(--ink-3);font-size:13px;margin:-8px 0 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+svg text{fill:var(--ink-2);font-family:var(--f-body)}
+svg .val{fill:var(--ink);font-family:var(--f-num);font-size:12px}
+svg .grid{stroke:var(--line)}
+.takeaways{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.takeaways h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px}
+.takeaways ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--ink-2)}
+.takeaways b{color:var(--ink)}
+.pill{font-size:12px;padding:1px 8px;border-radius:999px;font-weight:500}
+.pill.pos{background:var(--pos-soft);color:var(--pos)} .pill.neg{background:var(--neg-soft);color:var(--neg)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--ink-2);border-radius:999px;padding:4px 12px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);background:var(--panel)}
+.chip i{width:9px;height:9px;border-radius:50%}
+.chip:focus-visible,.switch input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cloud{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:6px 18px;padding:14px 4px;line-height:1.2}
+.cloud span{font-weight:700;cursor:default}
+.cloud span.pos{color:var(--pos)} .cloud span.neg{color:var(--neg)} .cloud span.mix{color:var(--ink-2)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--ink-3);font-weight:500;letter-spacing:.06em}
+td.q{color:var(--ink-2)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+select{font:inherit;font-size:13px;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.tblctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px;color:var(--ink-3)}
+.method{font-size:13px;color:var(--ink-3);display:flex;flex-direction:column;gap:4px}
+.flag{color:var(--accent);font-weight:500}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;padding:6px 10px;border-radius:6px;max-width:260px;z-index:10;line-height:1.5}
+@media (max-width:760px){.grid2,.takeaways{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}section.card{padding:18px 14px}}
+@media (prefers-reduced-motion:no-preference){svg rect.bar,svg polygon.area{transition:opacity .2s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Mobile01 討論串 · 2024-09-30 起 · 叫車 App 比較</div>
+    <h1>叫車平台輿情分析</h1>
+    <p class="lede">把討論串裡每一句對平台的評價拆成「平台 × 面向 × 正負」來計數，看網友最常抱怨什麼、最常稱讚什麼，以及五個平台各自的強弱項。</p>
+  </header>
+
+  <div class="controls">
+    <label class="switch"><input type="checkbox" id="exclude"> 排除疑似業配長文</label>
+    <span class="note">開頭那篇 LINE GO 比較長文被 3 樓等 3 人質疑是業配。勾選後重算所有圖表，可比較有無這篇時的差異。</span>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <section class="card">
+    <h2>重點結論</h2>
+    <div class="takeaways" id="takeaways"></div>
+  </section>
+
+  <section class="card">
+    <h2>各面向正負評價</h2>
+    <p class="sub">左側為抱怨、右側為稱讚，依總提及數排序。數字是「則數」（一位網友對一個平台、一個面向的一次表態）。</p>
+    <div class="legend"><span><i style="background:var(--neg)"></i>負面</span><span><i style="background:var(--pos)"></i>正面</span></div>
+    <div id="diverge"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>各平台好評與負評</h2>
+      <p class="sub">依淨好評（正面減負面）排序</p>
+      <div class="legend"><span><i style="background:var(--neg)"></i>負面</span><span><i style="background:var(--pos)"></i>正面</span></div>
+      <div id="platforms"></div>
+    </section>
+    <section class="card">
+      <h2>平台面向雷達圖</h2>
+      <p class="sub">每軸為該面向的淨評價（正面減負面），虛線圈為 0。最多同時比較 3 個平台。</p>
+      <div class="chips" id="radarChips"></div>
+      <div id="radar"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>關鍵字文字雲</h2>
+    <p class="sub">字越大代表越多人提到；綠色多為正面語境，紅色多為負面語境，灰色正負都有。</p>
+    <div class="cloud" id="cloud"></div>
+  </section>
+
+  <section class="card">
+    <h2>原始意見編碼表</h2>
+    <div class="tblctl">
+      <label for="fPlat">平台</label><select id="fPlat"></select>
+      <label for="fTopic">面向</label><select id="fTopic"></select>
+      <label for="fSent">正負</label><select id="fSent"><option value="">全部</option><option value="+">正面</option><option value="-">負面</option></select>
+      <span id="rowCount" class="num"></span>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>發言者</th><th>平台</th><th>面向</th><th>正負</th><th>原文摘錄</th></tr></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+
+  <div class="method">
+    <div><b>資料範圍</b>：使用者提供的 2 篇長文與 4 張討論串截圖（#3、#4、#7、#8、#9、#10 樓及留言），共 12 位發言者。</div>
+    <div><b>編碼方式</b>：人工判讀。10 樓 Steph01 未點名平台，依上下文（回應 9 樓的 Uber 取消經驗）歸為 Uber。8 樓「LINE GO 推薦優惠大」為轉述朋友說法，仍計入。</div>
+    <div><b>限制</b>：樣本小，單一長文就能左右排名，結論適合當作方向參考，不宜當作市場佔有率或滿意度的推估。</div>
+  </div>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const PLATS=[
+  {k:"LINE GO",c:"--p1"},{k:"Uber",c:"--p2"},{k:"55688",c:"--p3"},{k:"yoxi",c:"--p4"},{k:"呼叫小黃",c:"--p5"}];
+const A="原PO長文", B="網友B（補充呼叫小黃）";
+// [who, platform, topic, sentiment, quote, sponsoredFlag]
+const RAW=[
+ [A,"LINE GO","叫車方便/App","+","不用另外下載 app，打開 LINE 就可以直接叫車，頁面操作也簡單",1],
+ [A,"55688","叫車方便/App","-","輸入完下車地點還要按確認，有點多此一舉",1],
+ [A,"LINE GO","司機取消/放鳥","+","被放鳥頻率：LINE GO 沒遇過",1],
+ [A,"yoxi","司機取消/放鳥","+","被放鳥頻率：yoxi 沒遇過",1],
+ [A,"Uber","司機取消/放鳥","-","司機不想掉頭來載就直接取消，我定位明明在對面",1],
+ [A,"55688","司機與車況","-","車況前三大同小異，但很明顯 55688 素質不一",1],
+ [A,"55688","價格與優惠","+","同樣路程預估價格通常便宜一咪咪",1],
+ [A,"55688","價格與優惠","-","沒有固定價格，也沒有優惠券可使用",1],
+ [A,"LINE GO","價格與優惠","+","最近優惠真的滿多，系統還會自動套券",1],
+ [A,"Uber","價格與優惠","+","跟 LINE GO 一樣比較常發放優惠券",1],
+ [A,"yoxi","價格與優惠","-","價格高出太多",1],
+ [A,"LINE GO","服務多元","+","有寶寶、寵物計程車，特殊服務價格更有優勢",1],
+ [A,"Uber","服務多元","+","有寶寶計程車與寵物計程車",1],
+ [A,"55688","服務多元","+","也有寶寶計程車",1],
+ [A,"yoxi","服務多元","-","沒有提供特殊服務計程車",1],
+ [A,"yoxi","叫車可得性","-","司機數量也比較少",1],
+ [B,"呼叫小黃","叫車可得性","+","偏遠地方也叫得到車",0],
+ [B,"呼叫小黃","服務多元","+","可以加價叫車（如下雨天）",0],
+ [B,"呼叫小黃","司機與車況","+","平均素質較好，有些司機經營個人品牌",0],
+ [B,"呼叫小黃","叫車方便/App","+","很多選項可以過濾",0],
+ [B,"呼叫小黃","抽成與本土","+","不抽成",0],
+ [B,"呼叫小黃","價格與優惠","-","沒有優惠",0],
+ [B,"呼叫小黃","叫車可得性","-","車隊較小",0],
+ [B,"yoxi","價格與優惠","+","我倒覺得沒差，yoxi 優惠多",0],
+ [B,"Uber","抽成與本土","-","幾乎不用 Uber，因為不爽被美國抽成那麼多",0],
+ [B,"Uber","叫車可得性","+","颱風天排隊幾百人，唯有 Uber 讓我叫車",0],
+ [B,"LINE GO","叫車可得性","-","颱風天 LINE / yoxi / 小黃都不讓我叫車（好像要預約）",0],
+ [B,"yoxi","叫車可得性","-","颱風天 LINE / yoxi / 小黃都不讓我叫車",0],
+ [B,"呼叫小黃","叫車可得性","-","颱風天 LINE / yoxi / 小黃都不讓我叫車",0],
+ ["iamcx5（#3）","—","業配疑慮","-","怎麼業配味這麼濃……",0],
+ ["Albert 厄博特（#3 留言）","—","業配疑慮","-","是阿~真誇張",0],
+ ["m25161234（#3 留言）","—","業配疑慮","-","濃香醇!!",0],
+ ["麵左鈍（#4）","Uber","整體評價","+","四個都坐過：Uber > LINE GO = 55688 > yoxi",0],
+ ["麵左鈍（#4）","yoxi","司機與車況","-","和泰 yoxi 的車不僅舊，裡面還很髒（臭味、用過的衛生紙團）",0],
+ ["Nat507（#4 留言）","yoxi","司機與車況","-","yoxi 真的普遍比較髒臭 +1",0],
+ ["雙面浪人（#7）","55688","抽成與本土","+","不想給韓國（LINE）跟美國（Uber）賺太多，所以用 55688",0],
+ ["雙面浪人（#7）","LINE GO","抽成與本土","-","不想給韓國（LINE）賺太多",0],
+ ["雙面浪人（#7）","Uber","抽成與本土","-","不想給美國（Uber）賺太多",0],
+ ["雙面浪人（#7）","LINE GO","叫車方便/App","-","要進 LINE 才能再按 LINE GO，多一個流程；LINE 太肥",0],
+ ["雙面浪人（#7）","55688","叫車方便/App","-","上車地點容易跳掉，按返回鍵再進來就看不到上車點",0],
+ ["雙面浪人（#7）","Uber","叫車方便/App","+","上車點不會跳掉，Uber 就不會這樣",0],
+ ["日安小晏（#8）","LINE GO","價格與優惠","+","一直被朋友推薦 LINE GO，說推薦優惠很大",0],
+ ["buyd80（#9）","Uber","叫車方便/App","+","看預估來車時間，差太多就改選 Uber 的小黃",0],
+ ["buyd80（#9）","Uber","司機取消/放鳥","-","台南等了五六分鐘後竟然被取消，浪費時間",0],
+ ["Steph01（#10）","Uber","司機取消/放鳥","-","我也很常遇到取消，不知道是不是家不在市中心",0],
+].map(r=>({who:r[0],plat:r[1],topic:r[2],s:r[3],q:r[4],sp:!!r[5]}));
+
+const WORDS=[ // [詞, 次數, 是否出自業配文的次數, 語境]
+ ["優惠",6,3,"mix"],["取消",4,1,"neg"],["業配",3,0,"neg"],["抽成",3,0,"neg"],["髒臭",3,0,"neg"],
+ ["方便",3,2,"mix"],["寵物計程車",2,2,"pos"],["寶寶計程車",3,3,"pos"],["上車地點",2,0,"neg"],["颱風天",2,0,"mix"],
+ ["放鳥",2,2,"mix"],["便宜",2,2,"pos"],["素質",3,1,"mix"],["價格高",1,1,"neg"],["車舊",1,0,"neg"],
+ ["偏遠",2,0,"mix"],["加價叫車",1,0,"pos"],["自動套券",1,1,"pos"],["不用下載",1,1,"pos"],["推薦",1,0,"pos"],
+ ["預估時間",1,0,"pos"],["LINE 太肥",1,0,"neg"],["多一個流程",2,1,"neg"],["車隊小",2,1,"neg"],["不抽成",1,0,"pos"],
+ ["過濾選項",1,0,"pos"],["浪費時間",1,0,"neg"],["預約",1,0,"neg"]];
+
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const pc=k=>`var(${PLATS.find(p=>p.k===k).c})`;
+const tip=document.getElementById("tip");
+function bindTip(el,html){el.addEventListener("mousemove",e=>{tip.innerHTML=html;tip.hidden=false;
+  const x=Math.min(e.clientX+14,innerWidth-tip.offsetWidth-8);tip.style.left=x+"px";tip.style.top=(e.clientY+14)+"px"});
+  el.addEventListener("mouseleave",()=>tip.hidden=true)}
+const NS="http://www.w3.org/2000/svg";
+function S(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function T(txt,attrs,parent){const e=S("text",attrs,parent);e.textContent=txt;return e}
+function rbar(x,y,w,h,r,side){ // rounded only on data end
+  if(w<=0)return "";r=Math.min(r,w,h/2);
+  if(side==="right")return `M${x},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h-r}Q${x+w},${y+h} ${x+w-r},${y+h}H${x}Z`;
+  return `M${x+w},${y}H${x+r}Q${x},${y} ${x},${y+r}V${y+h-r}Q${x},${y+h} ${x+r},${y+h}H${x+w}Z`;
+}
+
+let excl=false;
+const data=()=>excl?RAW.filter(r=>!r.sp):RAW;
+
+function renderStats(d){
+  const people=new Set(d.map(r=>r.who)).size;
+  const pos=d.filter(r=>r.s==="+").length,neg=d.filter(r=>r.s==="-").length;
+  document.getElementById("stats").innerHTML=
+   `<div class="stat"><b>${people}</b><span>位發言者</span></div>
+    <div class="stat"><b>${d.length}</b><span>則編碼意見</span></div>
+    <div class="stat"><b style="color:var(--pos)">${pos}</b><span>則正面</span></div>
+    <div class="stat"><b style="color:var(--neg)">${neg}</b><span>則負面</span></div>`;
+}
+
+function agg(d,key){const m={};d.forEach(r=>{const k=r[key];m[k]=m[k]||{k,pos:0,neg:0,ppl:new Set()};r.s==="+"?m[k].pos++:m[k].neg++;m[k].ppl.add(r.who)});return Object.values(m)}
+
+function renderDiverge(d){
+  const rows=agg(d,"topic").sort((a,b)=>(b.pos+b.neg)-(a.pos+a.neg)||b.neg-a.neg);
+  const box=document.getElementById("diverge");box.innerHTML="";
+  const W=Math.max(box.clientWidth,320),lab=Math.min(130,W*.3),rowH=34,H=rows.length*rowH+26;
+  const max=Math.max(...rows.map(r=>Math.max(r.pos,r.neg)),1),half=(W-lab-40)/2,cx=lab+20+half;
+  const sx=v=>v/max*(half-28);
+  const svg=S("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img","aria-label":"各面向正負評價分歧長條圖"},box);
+  for(let v=0;v<=max;v++){[-1,1].forEach(sg=>{if(v===0&&sg<0)return;const x=cx+sg*sx(v);S("line",{x1:x,x2:x,y1:4,y2:H-22,class:"grid","stroke-dasharray":v?"2 4":""},svg);T(v,{x,y:H-6,"text-anchor":"middle","font-size":11},svg)})}
+  rows.forEach((r,i)=>{const y=8+i*rowH,h=rowH-12;
+    T(r.k,{x:lab,y:y+h/2+5,"text-anchor":"end","font-size":13},svg);
+    const pn=S("path",{d:rbar(cx-sx(r.neg),y,sx(r.neg),h,4,"left"),fill:"var(--neg)",class:"bar"},svg);
+    const pp=S("path",{d:rbar(cx+1,y,sx(r.pos),h,4,"right"),fill:"var(--pos)",class:"bar"},svg);
+    if(r.neg)T(r.neg,{x:cx-sx(r.neg)-6,y:y+h/2+4,"text-anchor":"end",class:"val"},svg);
+    if(r.pos)T(r.pos,{x:cx+sx(r.pos)+6,y:y+h/2+4,class:"val"},svg);
+    const hit=S("rect",{x:0,y:y-4,width:W,height:rowH,fill:"transparent"},svg);
+    const ex=d.filter(x=>x.topic===r.k);
+    bindTip(hit,`<b>${r.k}</b><br>負面 ${r.neg} · 正面 ${r.pos}<br>涉及平台：${[...new Set(ex.map(x=>x.plat))].join("、")}`);
+  });
+}
+
+function renderPlatforms(d){
+  const rows=agg(d.filter(r=>r.plat!=="—"),"plat").sort((a,b)=>(b.pos-b.neg)-(a.pos-a.neg));
+  const box=document.getElementById("platforms");box.innerHTML="";
+  const W=Math.max(box.clientWidth,300),lab=78,rowH=46,H=rows.length*rowH+24;
+  const max=Math.max(...rows.map(r=>Math.max(r.pos,r.neg)),1),half=(W-lab-56)/2,cx=lab+28+half,sx=v=>v/max*(half-20);
+  const svg=S("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img","aria-label":"各平台正負評價"},box);
+  S("line",{x1:cx,x2:cx,y1:2,y2:H-20,class:"grid"},svg);
+  rows.forEach((r,i)=>{const y=6+i*rowH,h=22;
+    S("circle",{cx:8,cy:y+h/2,r:5,fill:pc(r.k)},svg);
+    T(r.k,{x:18,y:y+h/2+5,"font-size":13},svg);
+    S("path",{d:rbar(cx-sx(r.neg),y,sx(r.neg),h,4,"left"),fill:"var(--neg)"},svg);
+    S("path",{d:rbar(cx+1,y,sx(r.pos),h,4,"right"),fill:"var(--pos)"},svg);
+    if(r.neg)T(r.neg,{x:cx-sx(r.neg)-6,y:y+h/2+4,"text-anchor":"end",class:"val"},svg);
+    if(r.pos)T(r.pos,{x:cx+sx(r.pos)+6,y:y+h/2+4,class:"val"},svg);
+    const net=r.pos-r.neg;
+    T(`淨 ${net>0?"+":""}${net}`,{x:cx,y:y+h+14,"text-anchor":"middle","font-size":11,fill:net>0?"var(--pos)":net<0?"var(--neg)":"var(--ink-3)"},svg).style.fill=net>0?"var(--pos)":net<0?"var(--neg)":"var(--ink-3)";
+    const ex=d.filter(x=>x.plat===r.k);
+    const top=s=>{const c={};ex.filter(x=>x.s===s).forEach(x=>c[x.topic]=(c[x.topic]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k} ${v}`).join("、")||"無"};
+    bindTip(S("rect",{x:0,y:y-6,width:W,height:rowH,fill:"transparent"},svg),`<b>${r.k}</b><br>好評：${top("+")}<br>負評：${top("-")}`);
+  });
+}
+
+const AXES=["價格與優惠","叫車方便/App","司機取消/放鳥","司機與車況","服務多元","叫車可得性","抽成與本土"];
+let radarSel=["LINE GO","Uber","呼叫小黃"];
+function renderRadar(d){
+  const chips=document.getElementById("radarChips");chips.innerHTML="";
+  PLATS.forEach(p=>{const b=document.createElement("button");b.className="chip";b.setAttribute("aria-pressed",radarSel.includes(p.k));
+    b.innerHTML=`<i style="background:var(${p.c})"></i>${p.k}`;
+    b.onclick=()=>{if(radarSel.includes(p.k))radarSel=radarSel.filter(x=>x!==p.k);else{radarSel.push(p.k);if(radarSel.length>3)radarSel.shift()}renderRadar(data())};chips.appendChild(b)});
+  const box=document.getElementById("radar");box.innerHTML="";
+  const W=Math.max(box.clientWidth,300),H=Math.min(W,400),cx=W/2,cy=H/2+4,R=Math.min(W/2-96,H/2-34);
+  const MIN=-3,MAX=3,rs=v=>(Math.max(MIN,Math.min(MAX,v))-MIN)/(MAX-MIN)*R;
+  const ang=i=>-Math.PI/2+i*2*Math.PI/AXES.length,pt=(i,v)=>[cx+Math.cos(ang(i))*rs(v),cy+Math.sin(ang(i))*rs(v)];
+  const svg=S("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img","aria-label":"平台面向雷達圖"},box);
+  [-3,-1.5,0,1.5,3].forEach(v=>S("polygon",{points:AXES.map((_,i)=>pt(i,v).join(",")).join(" "),fill:"none",class:"grid","stroke-dasharray":v===0?"4 3":"",style:v===0?"stroke:var(--ink-3)":""},svg));
+  AXES.forEach((a,i)=>{const[x,y]=pt(i,MAX);S("line",{x1:cx,y1:cy,x2:x,y2:y,class:"grid"},svg);
+    const[lx,ly]=[cx+Math.cos(ang(i))*(R+14),cy+Math.sin(ang(i))*(R+14)];
+    T(a,{x:lx,y:ly+4,"text-anchor":Math.abs(lx-cx)<6?"middle":lx>cx?"start":"end","font-size":12},svg)});
+  T("+3",{x:cx+4,y:cy-R+12,"font-size":10},svg);T("0",{x:cx+4,y:cy-rs(0)+12,"font-size":10},svg);
+  radarSel.forEach(k=>{const vals=AXES.map(a=>{const ex=d.filter(r=>r.plat===k&&r.topic===a);return ex.filter(r=>r.s==="+").length-ex.filter(r=>r.s==="-").length});
+    S("polygon",{points:vals.map((v,i)=>pt(i,v).join(",")).join(" "),fill:pc(k),"fill-opacity":.12,stroke:pc(k),"stroke-width":2,class:"area"},svg);
+    vals.forEach((v,i)=>{const[x,y]=pt(i,v);const c=S("circle",{cx:x,cy:y,r:4.5,fill:pc(k),stroke:"var(--panel)","stroke-width":2},svg);
+      const h=S("circle",{cx:x,cy:y,r:12,fill:"transparent"},svg);bindTip(h,`<b>${k}</b> · ${AXES[i]}<br>淨評價 ${v>0?"+":""}${v}`)})});
+}
+
+function renderCloud(){
+  const box=document.getElementById("cloud");box.innerHTML="";
+  const ws=WORDS.map(([w,n,sp,t])=>[w,excl?n-sp:n,t]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const max=ws[0][1];
+  // interleave big and small for an organic layout
+  const order=[];ws.forEach((w,i)=>i%2?order.push(w):order.unshift(w));
+  order.forEach(([w,n,t])=>{const s=document.createElement("span");s.textContent=w;s.className=t;
+    s.style.fontSize=(14+ (n-1)/(Math.max(max-1,1))*30)+"px";s.style.opacity=.55+.45*n/max;
+    bindTip(s,`「${w}」出現 ${n} 次`);box.appendChild(s)});
+}
+
+function renderTakeaways(d){
+  const t=agg(d,"topic");
+  const negTop=[...t].sort((a,b)=>b.neg-a.neg).slice(0,3),posTop=[...t].sort((a,b)=>b.pos-a.pos).slice(0,3);
+  const li=(r,s)=>{const ex=d.filter(x=>x.topic===r.k&&x.s===s);const pl={};ex.forEach(x=>pl[x.plat]=(pl[x.plat]||0)+1);
+    const pls=Object.entries(pl).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k==="—"?`針對原文 ${v}`:`${k} ${v}`).join("、");
+    return `<li><b>${r.k}</b>（${ex.length} 則，${new Set(ex.map(x=>x.who)).size} 人）：${pls}</li>`};
+  document.getElementById("takeaways").innerHTML=
+   `<div><h3><span class="pill neg">最多人抱怨</span></h3><ul>${negTop.map(r=>li(r,"-")).join("")}</ul></div>
+    <div><h3><span class="pill pos">最多人稱讚</span></h3><ul>${posTop.map(r=>li(r,"+")).join("")}</ul></div>
+    <div style="grid-column:1/-1"><ul>
+      <li><b>司機取消是最一致的痛點</b>：3 位不同網友都提到 Uber 被取消，10 樓推測與住處不在市中心有關。</li>
+      <li><b>yoxi 的車況衛生</b>有 2 人點名（髒、臭、車舊），價格偏高也被提到。</li>
+      <li><b>LINE GO 的好評高度依賴開頭長文</b>：${excl?"目前已排除該文，LINE GO 淨評價明顯下滑，剩下的好評只有「朋友推薦優惠大」。":"排除該文後，LINE GO 的好評從 5 則降為 1 則。可勾選上方開關比較。"}</li>
+      <li><b>「本土 vs 外資抽成」是新出現的選擇理由</b>：有 2 人因不想讓外國平台抽成而偏好 55688 或呼叫小黃。</li>
+      <li><b>方便性意見分歧</b>：有人認為 LINE GO 內建在 LINE 裡最方便，也有人覺得要先開 LINE 反而多一步。</li>
+    </ul></div>`;
+}
+
+function renderTable(d){
+  const fp=document.getElementById("fPlat").value,ft=document.getElementById("fTopic").value,fs=document.getElementById("fSent").value;
+  const rows=d.filter(r=>(!fp||r.plat===fp)&&(!ft||r.topic===ft)&&(!fs||r.s===fs));
+  document.getElementById("rowCount").textContent=`${rows.length} 則`;
+  document.getElementById("tbody").innerHTML=rows.map(r=>`<tr><td>${r.who}${r.sp?' <span class="flag">疑似業配</span>':""}</td>
+   <td>${r.plat==="—"?"—":`<span class="dot" style="background:${pc(r.plat)}"></span>${r.plat}`}</td><td>${r.topic}</td>
+   <td><span class="pill ${r.s==="+"?"pos":"neg"}">${r.s==="+"?"正面":"負面"}</span></td><td class="q">${r.q}</td></tr>`).join("");
+}
+function initFilters(){
+  document.getElementById("fPlat").innerHTML=`<option value="">全部</option>`+[...PLATS.map(p=>p.k),"—"].map(k=>`<option value="${k}">${k==="—"?"（針對原文）":k}</option>`).join("");
+  document.getElementById("fTopic").innerHTML=`<option value="">全部</option>`+[...new Set(RAW.map(r=>r.topic))].map(k=>`<option>${k}</option>`).join("");
+  ["fPlat","fTopic","fSent"].forEach(id=>document.getElementById(id).onchange=()=>renderTable(data()));
+}
+
+function renderAll(){const d=data();renderStats(d);renderTakeaways(d);renderDiverge(d);renderPlatforms(d);renderRadar(d);renderCloud();renderTable(d)}
+document.getElementById("exclude").onchange=e=>{excl=e.target.checked;renderAll()};
+initFilters();renderAll();
+let rt;addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(renderAll,150)});
+</script>
+
+</body></html>
